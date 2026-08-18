@@ -2,24 +2,37 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import confetti from "canvas-confetti";
 
 export default function Home() {
   const [urunler, setUrunler] = useState<any[]>([]);
   const [isClient, setIsClient] = useState(false);
   const [adetler, setAdetler] = useState<{ [key: number]: number }>({});
+  const [sepetSayisi, setSepetSayisi] = useState(0);
 
   useEffect(() => {
     setIsClient(true);
     const kayitliUrunler = localStorage.getItem("trendtan_urunler");
     if (kayitliUrunler) {
-      const parsed = JSON.parse(kayitliUrunler);
-      setUrunler(parsed);
-      // Başlangıç adetlerini 1 yap
-      const ilkAdetler: { [key: number]: number } = {};
-      parsed.forEach((_: any, index: number) => {
-        ilkAdetler[index] = 1;
-      });
-      setAdetler(ilkAdetler);
+      try {
+        const parsed = JSON.parse(kayitliUrunler);
+        setUrunler(parsed);
+        const ilkAdetler: { [key: number]: number } = {};
+        parsed.forEach((_: any, index: number) => {
+          ilkAdetler[index] = 1;
+        });
+        setAdetler(ilkAdetler);
+      } catch (e) {
+        console.error("Ürünler yüklenirken hata oluştu", e);
+      }
+    }
+
+    // Sepet sayısını yerel bellekten al
+    const kayitliSepet = localStorage.getItem("trendtan_sepet");
+    if (kayitliSepet) {
+      const sepet = JSON.parse(kayitliSepet);
+      const toplamAdet = sepet.reduce((acc: number, item: any) => acc + item.adet, 0);
+      setSepetSayisi(toplamAdet);
     }
   }, []);
 
@@ -33,7 +46,31 @@ export default function Home() {
 
   const sepeteEkle = (urun: any, index: number) => {
     const adet = adetler[index] || 1;
-    alert(`${adet} adet "${urun.ad}" sepete eklendi!`);
+
+    // Konfeti Animasyonu Patlat
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#f97316", "#f59e0b", "#000000", "#ffffff"]
+    });
+
+    // Sepete kaydet
+    const kayitliSepet = localStorage.getItem("trendtan_sepet");
+    let sepet = kayitliSepet ? JSON.parse(kayitliSepet) : [];
+    
+    const mevcutIndex = sepet.findIndex((item: any) => item.ad === urun.ad);
+    if (mevcutIndex > -1) {
+      sepet[mevcutIndex].adet += adet;
+    } else {
+      sepet.push({ ...urun, adet });
+    }
+
+    localStorage.setItem("trendtan_sepet", JSON.stringify(sepet));
+    
+    // Toplam sepet sayısını güncelle
+    const toplamAdet = sepet.reduce((acc: number, item: any) => acc + item.adet, 0);
+    setSepetSayisi(toplamAdet);
   };
 
   return (
@@ -49,6 +86,21 @@ export default function Home() {
           <span className="text-xl sm:text-2xl font-black tracking-wider text-black">
             TREND<span className="text-orange-400">TAN</span>
           </span>
+        </div>
+
+        {/* Sağ Üst Köşe Sepete Git Alanı */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/sepet"
+            className="relative bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-800 text-xs sm:text-sm font-bold px-4 py-2 rounded-xl transition-all flex items-center gap-2 shadow-sm"
+          >
+            🛒 Sepete Git
+            {sepetSayisi > 0 && (
+              <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                {sepetSayisi}
+              </span>
+            )}
+          </Link>
         </div>
       </header>
 
@@ -85,12 +137,20 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {urunler.map((urun, index) => (
                 <div key={index} className="border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-all flex flex-col bg-white">
-                  {/* Görsel Alanı */}
-                  <div className="w-full h-36 bg-gray-50 rounded-lg mb-2 flex items-center justify-center text-gray-300 text-[10px] overflow-hidden border border-gray-50">
+                  {/* Görsel Alanı - Kesin Çözüm */}
+                  <div className="w-full h-36 bg-gray-50 rounded-lg mb-2 flex items-center justify-center text-gray-300 text-[10px] overflow-hidden border border-gray-100 relative">
                     {urun.gorsel ? (
-                      <img src={urun.gorsel} alt={urun.ad} className="w-full h-full object-cover" />
+                      <img 
+                        src={urun.gorsel} 
+                        alt={urun.ad} 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          // Görsel yüklenemezse gizle
+                          (e.target as HTMLElement.prototype as any).style.display = 'none';
+                        }}
+                      />
                     ) : (
-                      "Görsel Yok"
+                      <span>Görsel Yok</span>
                     )}
                   </div>
 
