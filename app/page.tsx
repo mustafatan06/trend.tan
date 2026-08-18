@@ -7,72 +7,66 @@ export default function Home() {
   const [urunler, setUrunler] = useState<any[]>([]);
   const [sepetSayisi, setSepetSayisi] = useState(0);
   const [secilenKategori, setSecilenKategori] = useState("Tümü");
+  const [adetler, setAdetler] = useState<{ [key: number]: number }>({});
 
   useEffect(() => {
     const kayitli = localStorage.getItem("trendtan_urunler");
-    if (kayitli) setUrunler(JSON.parse(kayitli));
-    
+    if (kayitli) {
+      const p = JSON.parse(kayitli);
+      setUrunler(p);
+      const obj: any = {}; p.forEach((_: any, i: number) => obj[i] = 1);
+      setAdetler(obj);
+    }
     const s = localStorage.getItem("trendtan_sepet");
     if (s) setSepetSayisi(JSON.parse(s).reduce((a: number, b: any) => a + (b.adet || 1), 0));
   }, []);
 
-  const sepeteEkle = (urun: any) => {
+  const sepeteEkle = (urun: any, i: number) => {
     if (typeof window !== "undefined") {
       import("canvas-confetti").then(c => c.default({ particleCount: 100, spread: 70, origin: { y: 0.6 } }));
     }
     const sepet = JSON.parse(localStorage.getItem("trendtan_sepet") || "[]");
-    sepet.push({...urun, adet: 1});
+    sepet.push({...urun, adet: adetler[i] || 1});
     localStorage.setItem("trendtan_sepet", JSON.stringify(sepet));
     setSepetSayisi(sepet.reduce((a: number, b: any) => a + (b.adet || 1), 0));
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="w-full bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 text-white text-xs sm:text-sm py-2 px-4 text-center font-medium shadow-sm">
-        <span className="font-bold">SÜPER FIRSAT:</span> Seçili Ürünlerde Kaçırılmayacak İndirimler Başladı! Sınırlı Sayıda Stok. 🔥
+      {/* İnce Uzatılmış Turuncu Bant */}
+      <div className="w-full bg-[#fb923c] text-white text-[10px] py-1 px-8 tracking-widest uppercase font-semibold text-center">
+        SÜPER FIRSAT: Seçili Ürünlerde Kaçırılmayacak İndirimler!
       </div>
 
-      <header className="w-full border-b border-gray-100 px-4 sm:px-8 py-4 flex items-center justify-between bg-white">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">T</div>
-          <span className="text-xl sm:text-2xl font-black tracking-wider text-black">TREND<span className="text-orange-500">TAN</span></span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/admin" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-black text-sm font-semibold rounded-full transition-all">Satıcı Ol</Link>
-          <Link href="/sepet" className="px-5 py-2.5 bg-black hover:bg-gray-800 text-white text-sm font-semibold rounded-full flex items-center gap-2">
-            Sepetim ({sepetSayisi})
-          </Link>
-        </div>
+      {/* Header */}
+      <header className="w-full border-b border-gray-100 px-8 py-4 flex items-center justify-between">
+        <span className="text-2xl font-black tracking-wider text-black">TREND<span className="text-[#fb923c]">TAN</span></span>
+        <Link href="/sepet" className="bg-gray-50 border border-gray-200 px-5 py-2 rounded-xl text-sm font-bold">🛒 Sepetim ({sepetSayisi})</Link>
       </header>
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
-        {/* Banner */}
-        <div className="w-full bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 sm:p-10 text-white shadow-xl mb-8 text-center relative overflow-hidden">
-          <h1 className="text-2xl sm:text-4xl font-extrabold mb-3">Sen de Ürünlerini Satmaya Başla!</h1>
-          <p className="text-orange-50 mb-6 max-w-xl mx-auto">Mağazanızı hemen açın, binlerce müşteriye anında ulaşın.</p>
-          <Link href="/admin" className="px-8 py-3 bg-black text-white font-bold rounded-2xl">Mağaza Aç →</Link>
+      <main className="flex-1 max-w-7xl w-full mx-auto p-6">
+        <div className="w-full bg-[#fdba74] rounded-3xl p-10 text-white mb-10 text-center">
+          <h1 className="text-3xl font-extrabold mb-2">Sen de Ürünlerini Satmaya Başla!</h1>
+          <Link href="/admin" className="inline-block mt-4 px-8 py-3 bg-black text-white font-bold rounded-2xl">Mağaza Aç →</Link>
         </div>
 
-        {/* Kategoriler */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
-          {["Tümü", "Elektronik", "Moda ve Giyim", "Ev ve Yaşam"].map((k) => (
-            <button key={k} onClick={() => setSecilenKategori(k)} 
-              className={`px-5 py-2.5 rounded-full text-sm font-semibold border ${secilenKategori === k ? "bg-black text-white" : "bg-white border-gray-200"}`}>
-              {k}
-            </button>
-          ))}
-        </div>
-
-        {/* Ürün Listesi */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {urunler.filter(u => secilenKategori === "Tümü" || u.anaKategori?.includes(secilenKategori)).map((u, i) => (
-            <div key={i} className="border border-gray-100 rounded-2xl p-3 flex flex-col hover:shadow-lg transition-all">
-              <div className="w-full h-40 bg-gray-50 rounded-xl mb-3 overflow-hidden">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {urunler.map((u, i) => (
+            <div key={i} className="border border-gray-100 rounded-2xl p-3 flex flex-col">
+              <div className="w-full h-36 bg-gray-50 rounded-xl mb-2 overflow-hidden">
                 {u.gorsel ? <img src={u.gorsel} className="w-full h-full object-cover" /> : <div className="h-full flex items-center justify-center text-xs text-gray-300">Görsel Yok</div>}
               </div>
-              <h3 className="font-bold text-sm text-gray-800">{u.ad}</h3>
-              <p className="text-orange-500 font-bold text-lg mt-1">{u.fiyat} TL</p>
-              <button onClick={() => sepeteEkle(u)} className="w-full bg-black text-white text-xs py-2.5 mt-3 rounded-xl font-bold">Sepete Ekle</button>
+              <h3 className="font-bold text-sm">{u.ad}</h3>
+              <p className="text-[#fb923c] font-bold text-lg">{u.fiyat} TL</p>
+              
+              {/* Adet Sayacı */}
+              <div className="flex items-center gap-2 mt-2 bg-gray-50 p-1 rounded-lg">
+                <button onClick={() => setAdetler({...adetler, [i]: Math.max(1, (adetler[i]||1)-1)})} className="px-2 font-bold">-</button>
+                <span className="text-sm font-bold">{adetler[i]||1}</span>
+                <button onClick={() => setAdetler({...adetler, [i]: (adetler[i]||1)+1})} className="px-2 font-bold">+</button>
+              </div>
+
+              <button onClick={() => sepeteEkle(u, i)} className="w-full bg-black text-white text-xs py-2 mt-2 rounded-xl font-bold">Sepete Ekle</button>
             </div>
           ))}
         </div>
