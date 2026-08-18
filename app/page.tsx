@@ -29,7 +29,7 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Sağ Butonlar (Satıcı Ol ve İnteraktif Sepet Alanı) */}
+        {/* Sağ Butonlar (Satıcı Ol ve Gömülü/Entegre Sepet Butonu) */}
         <div className="flex items-center gap-3 ml-auto sm:ml-0">
           <Link
             href="/admin"
@@ -38,28 +38,27 @@ export default function Home() {
             Satıcı Ol
           </Link>
 
-          {/* İnteraktif Sepet ve Adet Alanı */}
-          <div className="flex items-center bg-black text-white rounded-full px-3 py-1.5 shadow-md gap-2">
-            <span className="text-xs font-medium">Sepet:</span>
-            <div className="flex items-center gap-1 bg-gray-800 rounded-full px-2 py-0.5">
+          {/* Gömülü Adet + Sepete Ekle Buton Grubu */}
+          <div className="flex items-center bg-black text-white rounded-full p-1 shadow-md">
+            <div className="flex items-center px-2 gap-1">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setSepetAdet(Math.max(1, sepetAdet - 1));
                 }}
-                className="text-white hover:text-orange-400 font-bold px-1.5 text-sm cursor-pointer select-none"
+                className="text-gray-400 hover:text-white font-bold px-1 text-xs cursor-pointer select-none"
                 type="button"
                 title="Azalt"
               >
                 -
               </button>
-              <span className="text-xs font-bold w-5 text-center">{sepetAdet}</span>
+              <span className="text-xs font-bold w-4 text-center text-white">{sepetAdet}</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setSepetAdet(sepetAdet + 1);
                 }}
-                className="text-white hover:text-orange-400 font-bold px-1.5 text-sm cursor-pointer select-none"
+                className="text-gray-400 hover:text-white font-bold px-1 text-xs cursor-pointer select-none"
                 type="button"
                 title="Arttır"
               >
@@ -68,10 +67,10 @@ export default function Home() {
             </div>
             <button
               onClick={sepeteEkle}
-              className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full transition-all cursor-pointer"
+              className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-full transition-all cursor-pointer shadow-sm"
               type="button"
             >
-              Ekle
+              Sepete Ekle
             </button>
           </div>
         </div>
@@ -79,7 +78,7 @@ export default function Home() {
 
       {/* Ana İçerik Alanı */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 flex flex-col items-center">
-        {/* Banner Kartı - Mağaza Aç Butonu Doğrudan /admin Sayfasına Yönlendirir */}
+        {/* Banner Kartı - Mağaza Aç Butonu /admin Sayfasına Yönlendirir */}
         <div className="w-full bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 sm:p-10 text-white shadow-xl flex flex-col items-center text-center relative overflow-hidden mb-8">
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           
