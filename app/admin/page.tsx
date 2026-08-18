@@ -1,7 +1,17 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
+  // Sepet adet sayısı için state
+  const [sepetAdet, setSepetAdet] = useState(1);
+
+  const sepeteEkle = () => {
+    alert(`Sepete ${sepetAdet} adet ürün başarıyla eklendi! 🛒`);
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Üst Fırsat Bandı */}
@@ -21,7 +31,7 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Sağ Butonlar (Satıcı Ol ve Sepetim) - Doğrudan Admin/Form Paneline Yönlendirildi */}
+        {/* Sağ Butonlar (Satıcı Ol ve İnteraktif Sepet Alanı) */}
         <div className="flex items-center gap-3 ml-auto sm:ml-0">
           <Link
             href="/admin"
@@ -29,22 +39,40 @@ export default function Home() {
           >
             Satıcı Ol
           </Link>
-          <Link
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              alert("Sepetiniz şu an boş. Ürün ekleme özelliği yakında aktif olacaktır.");
-            }}
-            className="px-5 py-2.5 bg-black hover:bg-gray-800 text-white text-sm font-semibold rounded-full transition-all shadow-md flex items-center gap-2 cursor-pointer"
-          >
-            Sepetim
-          </Link>
+
+          {/* İnteraktif Sepet ve Adet Alanı */}
+          <div className="flex items-center bg-black text-white rounded-full px-3 py-1.5 shadow-md gap-2">
+            <span className="text-xs font-medium">Sepet:</span>
+            <div className="flex items-center gap-1 bg-gray-800 rounded-full px-2 py-0.5">
+              <button
+                onClick={() => setSepetAdet(Math.max(1, sepetAdet - 1))}
+                className="text-white hover:text-orange-400 font-bold px-1 text-xs cursor-pointer"
+                title="Azalt"
+              >
+                -
+              </button>
+              <span className="text-xs font-bold w-4 text-center">{sepetAdet}</span>
+              <button
+                onClick={() => setSepetAdet(sepetAdet + 1)}
+                className="text-white hover:text-orange-400 font-bold px-1 text-xs cursor-pointer"
+                title="Arttır"
+              >
+                +
+              </button>
+            </div>
+            <button
+              onClick={sepeteEkle}
+              className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full transition-all cursor-pointer"
+            >
+              Ekle
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Ana İçerik Alanı */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 flex flex-col items-center">
-        {/* Banner Kartı */}
+        {/* Banner Kartı - Mağaza Aç Butonu /admin sayfasına bağlandı */}
         <div className="w-full bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl p-6 sm:p-10 text-white shadow-xl flex flex-col items-center text-center relative overflow-hidden mb-8">
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           
@@ -85,7 +113,7 @@ export default function Home() {
             ].map((kategori, index) => (
               <button
                 key={index}
-                onClick={() => alert(`${kategori} kategorisi seçildi. Ürünler listeleniyor...`)}
+                onClick={() => alert(`${kategori} kategorisi seçildi.`)}
                 className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-sm cursor-pointer ${
                   index === 0
                     ? "bg-black text-white shadow-md"
@@ -98,7 +126,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Örnek/Geçici Ürünler Kaldırıldı - Dinamik Ürün Alanı İçin Hazır Bölüm */}
+        {/* Bilgilendirme Alanı */}
         <div className="w-full text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
           <p className="text-gray-500 font-medium text-sm sm:text-base">
             Henüz listelenmiş aktif bir ürün bulunmuyor.
