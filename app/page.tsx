@@ -6,14 +6,35 @@ import Link from "next/link";
 export default function Home() {
   const [urunler, setUrunler] = useState<any[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [adetler, setAdetler] = useState<{ [key: number]: number }>({});
 
   useEffect(() => {
     setIsClient(true);
     const kayitliUrunler = localStorage.getItem("trendtan_urunler");
     if (kayitliUrunler) {
-      setUrunler(JSON.parse(kayitliUrunler));
+      const parsed = JSON.parse(kayitliUrunler);
+      setUrunler(parsed);
+      // Başlangıç adetlerini 1 yap
+      const ilkAdetler: { [key: number]: number } = {};
+      parsed.forEach((_: any, index: number) => {
+        ilkAdetler[index] = 1;
+      });
+      setAdetler(ilkAdetler);
     }
   }, []);
+
+  const adetDegistir = (index: number, delta: number) => {
+    setAdetler((prev) => {
+      const mevcut = prev[index] || 1;
+      const yeni = mevcut + delta;
+      return { ...prev, [index]: yeni < 1 ? 1 : yeni };
+    });
+  };
+
+  const sepeteEkle = (urun: any, index: number) => {
+    const adet = adetler[index] || 1;
+    alert(`${adet} adet "${urun.ad}" sepete eklendi!`);
+  };
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -43,7 +64,7 @@ export default function Home() {
       </div>
 
       <main className="flex-1 w-full mx-auto px-4 py-6 flex flex-col items-center">
-        {/* Daha Açık Tonlu, İnce, Kenarlara Uzanan Banner */}
+        {/* Banner */}
         <div className="w-full bg-gradient-to-r from-orange-300 via-orange-400 to-amber-300 py-4 px-6 sm:px-10 text-white shadow-md flex items-center justify-between gap-4 mb-8">
           <div className="flex flex-col">
             <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight">Sen de Ürünlerini Satmaya Başla!</h1>
@@ -63,17 +84,50 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {urunler.map((urun, index) => (
-                <div key={index} className="border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-all flex flex-col">
-                  <div className="w-full h-32 bg-gray-50 rounded-lg mb-2 flex items-center justify-center text-gray-300 text-[10px] overflow-hidden">
-                    {urun.gorsel && urun.gorsel.startsWith("data:image") ? (
+                <div key={index} className="border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-all flex flex-col bg-white">
+                  {/* Görsel Alanı */}
+                  <div className="w-full h-36 bg-gray-50 rounded-lg mb-2 flex items-center justify-center text-gray-300 text-[10px] overflow-hidden border border-gray-50">
+                    {urun.gorsel ? (
                       <img src={urun.gorsel} alt={urun.ad} className="w-full h-full object-cover" />
                     ) : (
                       "Görsel Yok"
                     )}
                   </div>
-                  <h3 className="font-bold text-sm truncate">{urun.ad}</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">{urun.anaKategori}</p>
-                  <p className="text-orange-400 font-bold text-base mt-auto pt-2">{urun.fiyat} TL</p>
+
+                  <h3 className="font-bold text-sm truncate text-gray-800">{urun.ad}</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">{urun.anaKategori}</p>
+                  <p className="text-orange-400 font-extrabold text-base mt-1">{urun.fiyat} TL</p>
+
+                  {/* Adet ve Sepete Ekle Bölümü */}
+                  <div className="mt-3 pt-2 border-t border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center justify-between bg-gray-50 rounded-lg p-1">
+                      <span className="text-[11px] text-gray-500 font-medium pl-1">Adet:</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => adetDegistir(index, -1)}
+                          className="w-6 h-6 bg-white border border-gray-200 rounded text-xs font-bold text-gray-600 hover:bg-gray-100 flex items-center justify-center cursor-pointer"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold text-gray-800 w-4 text-center">
+                          {adetler[index] || 1}
+                        </span>
+                        <button
+                          onClick={() => adetDegistir(index, 1)}
+                          className="w-6 h-6 bg-white border border-gray-200 rounded text-xs font-bold text-gray-600 hover:bg-gray-100 flex items-center justify-center cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => sepeteEkle(urun, index)}
+                      className="w-full bg-black hover:bg-gray-800 text-white text-xs font-bold py-2 rounded-lg transition-all shadow-sm cursor-pointer"
+                    >
+                      Sepete Ekle
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
