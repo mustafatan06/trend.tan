@@ -34,7 +34,7 @@ export default function Home() {
       {/* Kategoriler */}
       <div className="w-full bg-white border-b border-gray-100 py-3 px-4 overflow-x-auto scrollbar-none">
         <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3 whitespace-nowrap">
-          {["Tümü", "Elektronik", "Moda ve Giyim", "Ev ve Yaşam", "Kozmetik", "Spor ve Outdoor", "Anne ve Bebek", "Kitap ve Hobi", "Yapı Market", "Süpermarket", "Oto & Bahçe", "Diğer"].map((kategori, index) => (
+          {["Tümü", "Elektronik", "Moda ve Giyim", "Ev ve Yaşam", "Kozmetik", "Spor and Outdoor", "Anne ve Bebek", "Kitap ve Hobi", "Yapı Market", "Süpermarket", "Oto & Bahçe", "Diğer"].map((kategori, index) => (
             <button key={index} className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all ${index === 0 ? "bg-black text-white" : "bg-gray-50 text-gray-700 hover:bg-gray-100"}`}>
               {kategori}
             </button>
@@ -63,10 +63,17 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {urunler.map((urun, index) => (
-                <div key={index} className="border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-all">
-                  <div className="w-full h-32 bg-gray-50 rounded-lg mb-2 flex items-center justify-center text-gray-300 text-[10px]">Görsel</div>
-                  <h3 className="font-bold text-sm">{urun.ad}</h3>
-                  <p className="text-orange-400 font-bold text-base mt-2">{urun.fiyat} TL</p>
+                <div key={index} className="border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-all flex flex-col">
+                  <div className="w-full h-32 bg-gray-50 rounded-lg mb-2 flex items-center justify-center text-gray-300 text-[10px] overflow-hidden">
+                    {urun.gorsel && urun.gorsel.startsWith("data:image") ? (
+                      <img src={urun.gorsel} alt={urun.ad} className="w-full h-full object-cover" />
+                    ) : (
+                      "Görsel Yok"
+                    )}
+                  </div>
+                  <h3 className="font-bold text-sm truncate">{urun.ad}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">{urun.anaKategori}</p>
+                  <p className="text-orange-400 font-bold text-base mt-auto pt-2">{urun.fiyat} TL</p>
                 </div>
               ))}
             </div>
