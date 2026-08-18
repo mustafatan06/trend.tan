@@ -1,7 +1,26 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
+// Ana Kategoriler ve Alt Kategorileri Tanımlayalım
+const kategorilerData: { [key: string]: string[] } = {
+  "Tümü": [],
+  "Giyim, Ayakkabı ve Aksesuar": ["Kadın Giyim", "Erkek Giyim", "Kadın Ayakkabı", "Erkek Ayakkabı", "Çanta Ve Aksesuar"],
+  "Elektronik Ve Teknolojik Ürünler": ["Telefon Ve Tablet", "Bilgisayar", "Beyaz Eşya ve Tv", "Küçük Ev Aletleri"],
+  "Kozmetik Ve Kişisel Bakım": ["Cilt Bakımı", "Makyaj", "Parfüm Ve Deodorant", "Saç Bakımı"],
+  "Ev, Yaşam Ve Dekorasyon": ["Mobilya", "Ev Tekstili", "Mutfak Gereçleri", "Aydınlatma Ve Dekorasyon"],
+  "Anne, Bebek ve Oyuncak": ["Bebek Giyim", "Bebek Bakımı", "Oyuncaklar"],
+  "Spor, Outdoor ve Hobi": ["Spor Ekipmanları", "Outdoor", "Kitap-Müzik ve Hobi"],
+  "Ofis Mobilyaları": ["Ofis Takımları", "Makam Takımları", "Ofis Koltukları", "Çalışma Masaları"],
+};
+
 export default function Home() {
+  const [seciliAnaKategori, setSeciliAnaKategori] = useState("Tümü");
+  const [seciliAltKategori, setSeciliAltKategori] = useState("");
+
+  const altKategoriler = kategorilerData[seciliAnaKategori] || [];
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Üst Fırsat Bandı */}
@@ -11,7 +30,6 @@ export default function Home() {
 
       {/* Header / Üst Menü */}
       <header className="w-full border-b border-gray-100 px-4 sm:px-8 py-4 flex items-center justify-between bg-white">
-        {/* Logo Alanı - Sadece TRENDTAN */}
         <div className="flex items-center">
           <span className="text-xl sm:text-2xl font-black tracking-wider text-black">
             TREND<span className="text-orange-500">TAN</span>
@@ -19,27 +37,18 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Kategoriler - Turuncu alanın hemen altında, yan yana sıralı */}
+      {/* 1. SEVİYE ANA KATEGORİLER (Sağa sola kaydırılabilir) */}
       <div className="w-full bg-white border-b border-gray-100 py-3 px-4 overflow-x-auto scrollbar-none">
         <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3 whitespace-nowrap">
-          {[
-            "Tümü",
-            "Elektronik",
-            "Moda ve Giyim",
-            "Ev ve Yaşam",
-            "Kozmetik ve Kişisel Bakım",
-            "Spor ve Outdoor",
-            "Anne ve Bebek",
-            "Kitap ve Hobi",
-            "Yapı Market ve Oto",
-            "Süpermarket",
-            "Oto & Bahçe",
-            "Diğer"
-          ].map((kategori, index) => (
+          {Object.keys(kategorilerData).map((kategori, index) => (
             <button
               key={index}
+              onClick={() => {
+                setSeciliAnaKategori(kategori);
+                setSeciliAltKategori(""); // Ana kategori değişince alt seçimi sıfırla
+              }}
               className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all shadow-sm cursor-pointer ${
-                index === 0
+                seciliAnaKategori === kategori
                   ? "bg-black text-white shadow-md"
                   : "bg-gray-50 text-gray-700 border border-gray-200 hover:border-black hover:text-black"
               }`}
@@ -49,6 +58,28 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* 2. SEVİYE ALT KATEGORİLER (Ana kategori seçilince üst kısımda açılır) */}
+      {altKategoriler.length > 0 && (
+        <div className="w-full bg-orange-50/60 border-b border-orange-100 py-2.5 px-4 overflow-x-auto">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 whitespace-nowrap">
+            <span className="text-xs font-bold text-orange-600 mr-2 uppercase tracking-wide">Alt Kategoriler:</span>
+            {altKategoriler.map((alt, idx) => (
+              <button
+                key={idx}
+                onClick={() => setSeciliAltKategori(alt)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  seciliAltKategori === alt
+                    ? "bg-orange-600 text-white shadow"
+                    : "bg-white text-orange-900 border border-orange-200 hover:bg-orange-100"
+                }`}
+              >
+                {alt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Ana İçerik Alanı */}
       <main className="flex-1 w-full mx-auto px-4 sm:px-8 py-6 flex flex-col items-center">
@@ -80,7 +111,11 @@ export default function Home() {
             📦
           </div>
           <p className="text-gray-600 font-semibold text-base sm:text-lg">
-            Mağazalar ve ürünler yakında burada listelenecektir.
+            {seciliAltKategori 
+              ? `"${seciliAltKategori}" kategorisinde henüz ürün bulunmuyor.` 
+              : seciliAnaKategori !== "Tümü" 
+              ? `"${seciliAnaKategori}" kategorisinde henüz ürün bulunmuyor.` 
+              : "Mağazalar ve ürünler yakında burada listelenecektir."}
           </p>
           <p className="text-gray-400 text-xs sm:text-sm mt-1">
             Ürün eklemek veya mağazanızı yönetmek için panel girişini kullanabilirsiniz.

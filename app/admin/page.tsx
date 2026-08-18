@@ -3,6 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 
+// Satıcı Paneli ve Ana Sayfa ile Tam Uyumlu Kategoriler
+const kategorilerData: { [key: string]: string[] } = {
+  "Giyim, Ayakkabı ve Aksesuar": ["Kadın Giyim", "Erkek Giyim", "Kadın Ayakkabı", "Erkek Ayakkabı", "Çanta Ve Aksesuar"],
+  "Elektronik Ve Teknolojik Ürünler": ["Telefon Ve Tablet", "Bilgisayar", "Beyaz Eşya ve Tv", "Küçük Ev Aletleri"],
+  "Kozmetik Ve Kişisel Bakım": ["Cilt Bakımı", "Makyaj", "Parfüm Ve Deodorant", "Saç Bakımı"],
+  "Ev, Yaşam Ve Dekorasyon": ["Mobilya", "Ev Tekstili", "Mutfak Gereçleri", "Aydınlatma Ve Dekorasyon"],
+  "Anne, Bebek ve Oyuncak": ["Bebek Giyim", "Bebek Bakımı", "Oyuncaklar"],
+  "Spor, Outdoor ve Hobi": ["Spor Ekipmanları", "Outdoor", "Kitap-Müzik ve Hobi"],
+  "Ofis Mobilyaları": ["Ofis Takımları", "Makam Takımları", "Ofis Koltukları", "Çalışma Masaları"],
+};
+
 export default function AdminPage() {
   const [view, setView] = useState<"login" | "register" | "success" | "dashboard">("login");
 
@@ -22,7 +33,8 @@ export default function AdminPage() {
   const [urunler, setUrunler] = useState<any[]>([]);
   const [yeniUrun, setYeniUrun] = useState({
     ad: "",
-    kategori: "",
+    anaKategori: "",
+    altKategori: "",
     fiyat: "",
     stok: "",
     aciklama: "",
@@ -47,9 +59,7 @@ export default function AdminPage() {
       return;
     }
 
-    // Gizli olarak mustafatan690@gmail.com adresine yönlendirmesimülasyonu
     console.log("Başvuru mustafatan690@gmail.com adresine gönderildi:", formData);
-
     setFormError("");
     setView("success");
   };
@@ -57,45 +67,47 @@ export default function AdminPage() {
   // Ürün Ekleme / Güncelleme
   const handleUrunKaydet = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!yeniUrun.ad || !yeniUrun.kategori || !yeniUrun.fiyat || !yeniUrun.stok) {
+    if (!yeniUrun.ad || !yeniUrun.fiyat || !yeniUrun.stok) {
       setUrunError("Lütfen zorunlu ürün alanlarını doldurun!");
       return;
     }
-    if (yeniUrun.kategori === "Seciniz" || !yeniUrun.kategori) {
-      setUrunError("Geçersiz kategori seçimi! Lütfen geçerli bir kategori seçin.");
+    if (!yeniUrun.anaKategori || yeniUrun.anaKategori === "Seciniz") {
+      setUrunError("Geçersiz ana kategori seçimi! Lütfen kategori seçin.");
+      return;
+    }
+    if (!yeniUrun.altKategori || yeniUrun.altKategori === "Seciniz") {
+      setUrunError("Lütfen ürüne ait alt kategoriyi eksiksiz seçin!");
       return;
     }
 
     setUrunError("");
 
     if (duzenleId !== null) {
-      // Güncelleme
       setUrunler(
         urunler.map((item, idx) => (idx === duzenleId ? yeniUrun : item))
       );
       setDuzenleId(null);
     } else {
-      // Yeni Ekleme
       setUrunler([...urunler, yeniUrun]);
     }
 
-    setYeniUrun({ ad: "", kategori: "", fiyat: "", stok: "", aciklama: "", gorsel: "" });
+    setYeniUrun({ ad: "", anaKategori: "", altKategori: "", fiyat: "", stok: "", aciklama: "", gorsel: "" });
   };
 
-  // Ürün Silme
   const ürünSil = (index: number) => {
     setUrunler(urunler.filter((_, idx) => idx !== index));
   };
 
-  // Ürün Düzenleme Hazırlığı
   const ürünDüzenle = (index: number) => {
     setYeniUrun(urunler[index]);
     setDuzenleId(index);
   };
 
+  // Seçilen ana kategoriye göre alt kategorileri getir
+  const mevcutAltKategoriler = yeniUrun.anaKategori ? kategorilerData[yeniUrun.anaKategori] || [] : [];
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-between">
-      {/* Üst Bar */}
       <header className="w-full bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
         <Link href="/" className="text-xl font-black tracking-wider text-black">
           TREND<span className="text-orange-500">TAN</span> <span className="text-xs text-gray-500 font-normal">| Satıcı Paneli</span>
@@ -105,10 +117,8 @@ export default function AdminPage() {
         </Link>
       </header>
 
-      {/* İçerik Alanı */}
       <main className="flex-1 max-w-3xl w-full mx-auto p-6 my-6 bg-white rounded-2xl shadow-md border border-gray-100">
         
-        {/* 1. GİRİŞ EKRANI */}
         {view === "login" && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Satıcı Girişi</h2>
@@ -157,7 +167,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 2. MAĞAZA BAŞVURU FORMU */}
         {view === "register" && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">Mağaza Başvuru Formu</h2>
@@ -268,7 +277,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 3. BAŞVURU BAŞARILI EKRANI */}
         {view === "success" && (
           <div className="text-center py-10 space-y-6">
             <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner">
@@ -289,7 +297,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 4. SATICI ÜRÜN YÖNETİM PANELİ (DASHBOARD) */}
         {view === "dashboard" && (
           <div>
             <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
@@ -308,34 +315,49 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Ürün Ekleme/Düzenleme Formu */}
             <form onSubmit={handleUrunKaydet} className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4 mb-8">
               <h3 className="font-bold text-gray-700 text-sm">{duzenleId !== null ? "Ürünü Düzenle" : "Yeni Ürün Ekle"}</h3>
 
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Ürün Adı *</label>
+                <input
+                  type="text"
+                  value={yeniUrun.ad}
+                  onChange={(e) => setYeniUrun({ ...yeniUrun, ad: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="Ürün adı"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Ana Kategori Seçimi */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Ürün Adı *</label>
-                  <input
-                    type="text"
-                    value={yeniUrun.ad}
-                    onChange={(e) => setYeniUrun({ ...yeniUrun, ad: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500"
-                    placeholder="Ürün adı"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Kategori Seçimi *</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Ana Kategori Seçimi *</label>
                   <select
-                    value={yeniUrun.kategori}
-                    onChange={(e) => setYeniUrun({ ...yeniUrun, kategori: e.target.value })}
+                    value={yeniUrun.anaKategori}
+                    onChange={(e) => setYeniUrun({ ...yeniUrun, anaKategori: e.target.value, altKategori: "" })}
                     className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500"
                   >
-                    <option value="">Kategori Seçiniz</option>
-                    <option value="Elektronik">Elektronik</option>
-                    <option value="Moda ve Giyim">Moda ve Giyim</option>
-                    <option value="Ev ve Yaşam">Ev ve Yaşam</option>
-                    <option value="Kozmetik">Kozmetik ve Kişisel Bakım</option>
-                    <option value="Spor">Spor ve Outdoor</option>
+                    <option value="">Ana Kategori Seçiniz</option>
+                    {Object.keys(kategorilerData).map((kat, idx) => (
+                      <option key={idx} value={kat}>{kat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Alt Kategori Seçimi */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Alt Kategori Seçimi *</label>
+                  <select
+                    value={yeniUrun.altKategori}
+                    onChange={(e) => setYeniUrun({ ...yeniUrun, altKategori: e.target.value })}
+                    disabled={!yeniUrun.anaKategori}
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
+                  >
+                    <option value="">Önce Ana Kategori Seçin</option>
+                    {mevcutAltKategoriler.map((alt, idx) => (
+                      <option key={idx} value={alt}>{alt}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -352,7 +374,7 @@ export default function AdminPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Stok Miktarı *</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Stok Miktarı (Stok Takibi) *</label>
                   <input
                     type="number"
                     value={yeniUrun.stok}
@@ -395,7 +417,6 @@ export default function AdminPage() {
               </button>
             </form>
 
-            {/* Eklenen Ürünler Listesi */}
             <div>
               <h3 className="font-bold text-gray-800 text-sm mb-3">Mağazanızdaki Ürünler ({urunler.length})</h3>
               {urunler.length === 0 ? (
@@ -408,7 +429,7 @@ export default function AdminPage() {
                     <div key={index} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl shadow-sm">
                       <div>
                         <h4 className="font-bold text-sm text-gray-800">{item.ad}</h4>
-                        <p className="text-xs text-gray-500">{item.kategori} | Fiyat: {item.fiyat} TL | Stok: {item.stok}</p>
+                        <p className="text-xs text-gray-500">{item.anaKategori} &gt; {item.altKategori} | Fiyat: {item.fiyat} TL | Stok: {item.stok}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
